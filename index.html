@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#fce7f3">
+<title>🌸 이은이네 자산 관리</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #fff5f8;
+    --bg-grad: linear-gradient(180deg, #fff5f8 0%, #fef3ff 50%, #f0fdfa 100%);
+    --card: #ffffff;
+    --text: #4a3b52;
+    --muted: #a08fa8;
+    --border: #fce4ec;
+    --border-soft: #fdf2f6;
+    --accent: #ec4899;
+    --accent-soft: #fce7f3;
+    --accent-hover: #db2777;
+    --mint: #5eead4;
+    --lavender: #c4b5fd;
+    --peach: #fdba74;
+    --danger: #ff8a8a;
+    --success: #4ade80;
+    --warn: #fbbf24;
+    --shadow: 0 2px 8px rgba(236, 72, 153, 0.08), 0 1px 3px rgba(196, 181, 253, 0.06);
+    --shadow-lg: 0 8px 24px rgba(236, 72, 153, 0.12);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    background-image: var(--bg-grad);
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px 16px 80px;
+  }
+
+  header {
+    padding: 12px 4px 20px;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 22px;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    background: linear-gradient(120deg, #ec4899, #c4b5fd);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  h1 .emoji {
+    -webkit-text-fill-color: initial;
+    background: none;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 6px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-soft);
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text);
+  }
+
+  .total-amount {
+    font-size: 30px;
+    font-weight: 800;
+    background: linear-gradient(120deg, #ec4899, #a855f7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 4px 0 10px;
+    word-break: keep-all;
+    letter-spacing: -0.5px;
+  }
+
+  .breakdown {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .breakdown-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 12px 14px;
+    background: #fef7fb;
+    border-radius: 14px;
+    border: 1px solid var(--border-soft);
+  }
+  .breakdown-item.pension {
+    background: #fff7ed;
+    border-color: #ffedd5;
+  }
+  .breakdown-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .breakdown-value {
+    font-size: 15px;
+    font-weight: 700;
+    word-break: keep-all;
+    color: var(--accent);
+  }
+  .breakdown-item.pension .breakdown-value {
+    color: #ea7c1c;
+  }
+
+  .progress-wrap {
+    margin-top: 8px;
+  }
+
+  .progress-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 12px;
+    background: var(--accent-soft);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #fbb6ce, #ec4899, #a855f7);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    transition: width 0.5s ease;
+    border-radius: 999px;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  form.add-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  input, select, button {
+    font-family: inherit;
+    font-size: 15px;
+  }
+
+  input[type="text"], input[type="number"], select {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    background: #fffafc;
+    color: var(--text);
+    -webkit-appearance: none;
+    appearance: none;
+    transition: all 0.15s ease;
+  }
+
+  input::placeholder { color: #d4b8c8; }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+
+  select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='%23ec4899' d='M6 9L1 4h10z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
+  }
+
+  button {
+    cursor: pointer;
+    padding: 13px 18px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #f472b6, #ec4899);
+    color: #fff;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(236, 72, 153, 0.25);
+  }
+
+  button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.35);
+  }
+  button:active { transform: translateY(0); }
+
+  button.secondary {
+    background: #fff;
+    color: var(--accent);
+    border: 1.5px solid var(--border);
+    box-shadow: none;
+  }
+  button.secondary:hover { background: var(--accent-soft); border-color: var(--accent); }
+
+  button.danger {
+    background: linear-gradient(135deg, #fca5a5, #f87171);
+    box-shadow: 0 2px 6px rgba(248, 113, 113, 0.25);
+  }
+  button.danger:hover { box-shadow: 0 4px 12px rgba(248, 113, 113, 0.35); }
+
+  button.ghost {
+    background: transparent;
+    color: var(--accent);
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 999px;
+    box-shadow: none;
+  }
+  button.ghost:hover { background: var(--accent-soft); transform: none; box-shadow: none; }
+
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn-row > * { flex: 1; min-width: 0; }
+
+  .group {
+    margin-bottom: 16px;
+  }
+
+  .group {
+    margin-bottom: 18px;
+  }
+
+  .group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: linear-gradient(90deg, #fef3f9, #fdf2f8);
+    border-radius: 12px;
+    margin-bottom: 6px;
+  }
+
+  .group-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .group-subtotal {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .asset-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 6px;
+    border-bottom: 1px dashed var(--border-soft);
+    gap: 8px;
+  }
+  .asset-row:last-child { border-bottom: none; }
+
+  .asset-info {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .asset-name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .asset-amount {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  .asset-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    background: transparent;
+    color: var(--muted);
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 999px;
+    box-shadow: none;
+  }
+  .icon-btn:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+    transform: none;
+    box-shadow: none;
+  }
+  .icon-btn.delete:hover { background: #ffe4e4; color: #f87171; }
+
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 24px 8px;
+    font-size: 14px;
+  }
+
+  .chart-wrap {
+    position: relative;
+    height: 260px;
+  }
+
+  .snapshot-list {
+    margin-top: 12px;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+
+  .snapshot-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+  }
+  .snapshot-row:last-child { border-bottom: none; }
+
+  .snapshot-date { color: var(--muted); }
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+  .modal-backdrop.open { display: flex; }
+
+  .modal {
+    background: #fff;
+    border-radius: 24px;
+    padding: 22px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-soft);
+  }
+
+  .modal h2 {
+    font-size: 17px;
+    margin: 0 0 14px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .modal-actions > * { flex: 1; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: linear-gradient(135deg, #f472b6, #ec4899);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 200;
+    pointer-events: none;
+    box-shadow: 0 6px 16px rgba(236, 72, 153, 0.35);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .amount-hint {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 0 2px;
+    min-height: 16px;
+  }
+
+  .goal-text {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .percent-display {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .snapshot-row {
+    padding: 10px 4px;
+    border-bottom: 1px dashed var(--border-soft);
+  }
+
+  @media (max-width: 480px) {
+    .container { padding: 12px 12px 80px; }
+    .card { padding: 16px; border-radius: 18px; }
+    .total-amount { font-size: 26px; }
+    h1 { font-size: 19px; }
+    .breakdown-value { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1><span class="emoji">🌸</span> 이은이네 자산 관리 <span class="emoji">🌸</span></h1>
+    <div class="subtitle">오늘도 차곡차곡 모아봐요 ✨</div>
+  </header>
+
+  <!-- 총액 / 목표 -->
+  <div class="card">
+    <div class="card-title">💖 전체 자산</div>
+    <div class="total-amount" id="total-amount">0원</div>
+    <div class="breakdown" id="breakdown" style="display: none;">
+      <div class="breakdown-item">
+        <span class="breakdown-label">연금 제외</span>
+        <span class="breakdown-value" id="excl-pension-amount">0원</span>
+      </div>
+      <div class="breakdown-item pension">
+        <span class="breakdown-label">연금</span>
+        <span class="breakdown-value" id="pension-amount">0원</span>
+      </div>
+    </div>
+    <div class="progress-wrap" id="goal-section">
+      <div class="goal-text" id="goal-text">목표를 설정해보세요</div>
+      <div class="progress-row">
+        <span id="goal-percent">0%</span>
+        <span id="goal-remaining"></span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="goal-fill" style="width: 0%"></div>
+      </div>
+      <div style="margin-top: 10px;">
+        <button class="secondary" id="goal-btn" style="width: 100%; padding: 8px;">목표 설정 / 수정</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 자산 추가 -->
+  <div class="card">
+    <div class="card-title">🌷 자산 추가</div>
+    <form class="add-form" id="add-form">
+      <input type="text" id="name-input" placeholder="자산 이름 (예: 주거래 통장)" required>
+      <select id="type-input" required>
+        <option value="예금">🏦 예금</option>
+        <option value="적금">🐷 적금</option>
+        <option value="주식">📈 주식</option>
+        <option value="암호화폐">🪙 암호화폐</option>
+        <option value="부동산">🏡 부동산</option>
+        <option value="연금">👵 연금</option>
+        <option value="현금">💵 현금</option>
+        <option value="기타">🎀 기타</option>
+      </select>
+      <input type="text" inputmode="numeric" id="amount-input" placeholder="금액 (원)" required>
+      <div class="amount-hint" id="amount-hint"></div>
+      <button type="submit">추가하기</button>
+    </form>
+  </div>
+
+  <!-- 자산 목록 -->
+  <div class="card">
+    <div class="card-title">📋 자산 목록</div>
+    <div id="asset-list"></div>
+  </div>
+
+  <!-- 월별 추이 -->
+  <div class="card">
+    <div class="card-title">
+      📈 월별 변화 추이
+      <button class="ghost" id="snapshot-btn">＋ 이번 달 저장</button>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="chart"></canvas>
+    </div>
+    <div class="snapshot-list" id="snapshot-list"></div>
+  </div>
+
+  <!-- 데이터 관리 -->
+  <div class="card">
+    <div class="card-title">💌 데이터 관리</div>
+    <div class="subtitle" style="margin-bottom: 12px;">파일로 내보내서 가족과 공유하세요 💕</div>
+    <div class="btn-row">
+      <button class="secondary" id="export-btn">📤 내보내기</button>
+      <button class="secondary" id="import-btn">📥 불러오기</button>
+    </div>
+    <input type="file" id="import-input" accept=".json" style="display: none;">
+    <div style="margin-top: 10px;">
+      <button class="ghost" id="reset-btn" style="width: 100%;">전체 데이터 초기화</button>
+    </div>
+  </div>
+</div>
+
+<!-- 수정 모달 -->
+<div class="modal-backdrop" id="edit-modal">
+  <div class="modal">
+    <h2>자산 수정</h2>
+    <form id="edit-form" class="add-form">
+      <input type="text" id="edit-name" placeholder="자산 이름" required>
+      <select id="edit-type" required>
+        <option value="예금">🏦 예금</option>
+        <option value="적금">🐷 적금</option>
+        <option value="주식">📈 주식</option>
+        <option value="암호화폐">🪙 암호화폐</option>
+        <option value="부동산">🏡 부동산</option>
+        <option value="연금">👵 연금</option>
+        <option value="현금">💵 현금</option>
+        <option value="기타">🎀 기타</option>
+      </select>
+      <input type="text" inputmode="numeric" id="edit-amount" placeholder="금액 (원)" required>
+      <div class="amount-hint" id="edit-amount-hint"></div>
+      <div class="modal-actions">
+        <button type="button" class="secondary" id="edit-cancel">취소</button>
+        <button type="submit">저장</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 목표 설정 모달 -->
+<div class="modal-backdrop" id="goal-modal">
+  <div class="modal">
+    <h2>자산 목표 설정</h2>
+    <form id="goal-form" class="add-form">
+      <input type="text" id="goal-name-input" placeholder="목표 이름 (예: 내년까지 2억 모으기)">
+      <input type="text" inputmode="numeric" id="goal-amount-input" placeholder="목표 금액 (원)" required>
+      <div class="amount-hint" id="goal-amount-hint"></div>
+      <div class="modal-actions">
+        <button type="button" class="secondary" id="goal-cancel">취소</button>
+        <button type="button" class="danger" id="goal-clear" style="flex: 0.5;">삭제</button>
+        <button type="submit">저장</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+const STORAGE_KEY = "asset-tracker-data-v1";
+const TYPE_ORDER = ["예금", "적금", "주식", "암호화폐", "부동산", "연금", "현금", "기타"];
+const TYPE_EMOJI = {
+  "예금": "🏦",
+  "적금": "🐷",
+  "주식": "📈",
+  "암호화폐": "🪙",
+  "부동산": "🏡",
+  "연금": "👵",
+  "현금": "💵",
+  "기타": "🎀",
+};
+
+let state = {
+  assets: [],
+  snapshots: [],
+  goal: null,
+};
+
+let editingId = null;
+let chart = null;
+
+// ---------- Storage ----------
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state.assets = Array.isArray(parsed.assets) ? parsed.assets : [];
+      state.snapshots = Array.isArray(parsed.snapshots) ? parsed.snapshots : [];
+      state.goal = parsed.goal || null;
+    }
+  } catch (e) {
+    console.warn("저장된 데이터를 불러오지 못했습니다.", e);
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// ---------- Formatting ----------
+function formatKRW(n) {
+  if (!n && n !== 0) return "0원";
+  return n.toLocaleString("ko-KR") + "원";
+}
+
+function formatKRWShort(n) {
+  if (n >= 100000000) {
+    const eok = n / 100000000;
+    return (Math.round(eok * 100) / 100) + "억";
+  }
+  if (n >= 10000) {
+    const man = n / 10000;
+    return (Math.round(man * 10) / 10) + "만";
+  }
+  return n.toLocaleString("ko-KR");
+}
+
+function formatHint(n) {
+  if (n <= 0 || isNaN(n)) return "";
+  return formatKRW(n) + " (" + formatKRWShort(n) + ")";
+}
+
+function parseAmount(str) {
+  if (!str) return 0;
+  const cleaned = String(str).replace(/[^0-9]/g, "");
+  return cleaned ? parseInt(cleaned, 10) : 0;
+}
+
+function attachAmountFormatting(inputEl, hintEl) {
+  inputEl.addEventListener("input", () => {
+    const n = parseAmount(inputEl.value);
+    if (n > 0) {
+      inputEl.value = n.toLocaleString("ko-KR");
+    } else {
+      inputEl.value = "";
+    }
+    hintEl.textContent = formatHint(n);
+  });
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function currentMonthKey() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+}
+
+function formatMonthKey(key) {
+  const [y, m] = key.split("-");
+  return y + "년 " + parseInt(m, 10) + "월";
+}
+
+// ---------- Asset rendering ----------
+function totalAmount() {
+  return state.assets.reduce((sum, a) => sum + (a.amount || 0), 0);
+}
+
+function pensionAmount() {
+  return state.assets
+    .filter(a => a.type === "연금")
+    .reduce((sum, a) => sum + (a.amount || 0), 0);
+}
+
+function renderTotal() {
+  const total = totalAmount();
+  const pension = pensionAmount();
+  document.getElementById("total-amount").textContent = formatKRW(total);
+
+  const breakdown = document.getElementById("breakdown");
+  if (pension > 0) {
+    breakdown.style.display = "grid";
+    document.getElementById("excl-pension-amount").textContent = formatKRW(total - pension);
+    document.getElementById("pension-amount").textContent = formatKRW(pension);
+  } else {
+    breakdown.style.display = "none";
+  }
+}
+
+function renderGoal() {
+  const base = totalAmount() - pensionAmount();
+  const goalText = document.getElementById("goal-text");
+  const percentEl = document.getElementById("goal-percent");
+  const remainingEl = document.getElementById("goal-remaining");
+  const fillEl = document.getElementById("goal-fill");
+
+  if (!state.goal || !state.goal.amount) {
+    goalText.textContent = "목표를 설정해보세요";
+    percentEl.textContent = "0%";
+    remainingEl.textContent = "";
+    fillEl.style.width = "0%";
+    return;
+  }
+
+  const { name, amount } = state.goal;
+  const suffix = pensionAmount() > 0 ? " · 연금 제외 기준" : "";
+  goalText.textContent = (name ? name + " · " : "") + "목표 " + formatKRW(amount) + suffix;
+
+  const pct = Math.min(100, (base / amount) * 100);
+  percentEl.textContent = pct.toFixed(1) + "%";
+
+  const remaining = amount - base;
+  if (remaining > 0) {
+    remainingEl.textContent = "남은 " + formatKRWShort(remaining) + "원";
+  } else {
+    remainingEl.textContent = "🎉 목표 달성!";
+  }
+
+  fillEl.style.width = pct + "%";
+}
+
+function renderAssetList() {
+  const container = document.getElementById("asset-list");
+  if (state.assets.length === 0) {
+    container.innerHTML = '<div class="empty">아직 추가된 자산이 없어요.<br>위에서 자산을 추가해보세요.</div>';
+    return;
+  }
+
+  const byType = {};
+  for (const a of state.assets) {
+    if (!byType[a.type]) byType[a.type] = [];
+    byType[a.type].push(a);
+  }
+
+  const types = Object.keys(byType).sort((a, b) => {
+    const ia = TYPE_ORDER.indexOf(a);
+    const ib = TYPE_ORDER.indexOf(b);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+
+  let html = "";
+  for (const type of types) {
+    const items = byType[type];
+    const subtotal = items.reduce((s, a) => s + a.amount, 0);
+    html += '<div class="group">';
+    html += '<div class="group-header">';
+    html += '<span class="group-title">' + (TYPE_EMOJI[type] || '🎀') + ' ' + escapeHtml(type) + ' · ' + items.length + '개</span>';
+    html += '<span class="group-subtotal">' + formatKRW(subtotal) + '</span>';
+    html += '</div>';
+    for (const a of items) {
+      html += '<div class="asset-row">';
+      html += '<div class="asset-info">';
+      html += '<div class="asset-name">' + escapeHtml(a.name) + '</div>';
+      html += '<div class="asset-amount">' + formatKRW(a.amount) + '</div>';
+      html += '</div>';
+      html += '<div class="asset-actions">';
+      html += '<button class="icon-btn" data-edit="' + a.id + '">수정</button>';
+      html += '<button class="icon-btn delete" data-delete="' + a.id + '">삭제</button>';
+      html += '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+
+  container.querySelectorAll("[data-edit]").forEach(btn => {
+    btn.addEventListener("click", () => openEditModal(btn.getAttribute("data-edit")));
+  });
+  container.querySelectorAll("[data-delete]").forEach(btn => {
+    btn.addEventListener("click", () => deleteAsset(btn.getAttribute("data-delete")));
+  });
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+// ---------- CRUD ----------
+function addAsset(name, type, amount) {
+  state.assets.push({ id: uid(), name, type, amount });
+  saveState();
+  renderAll();
+}
+
+function updateAsset(id, name, type, amount) {
+  const a = state.assets.find(x => x.id === id);
+  if (!a) return;
+  a.name = name;
+  a.type = type;
+  a.amount = amount;
+  saveState();
+  renderAll();
+}
+
+function deleteAsset(id) {
+  const a = state.assets.find(x => x.id === id);
+  if (!a) return;
+  if (!confirm('"' + a.name + '"을(를) 삭제할까요?')) return;
+  state.assets = state.assets.filter(x => x.id !== id);
+  saveState();
+  renderAll();
+  toast("삭제했어요");
+}
+
+// ---------- Snapshots ----------
+function saveSnapshot() {
+  const key = currentMonthKey();
+  const total = totalAmount();
+  if (total === 0) {
+    toast("자산을 먼저 입력해주세요");
+    return;
+  }
+  const existing = state.snapshots.find(s => s.month === key);
+  if (existing) {
+    if (!confirm(formatMonthKey(key) + " 기록이 이미 있어요. 덮어쓸까요?\n현재: " + formatKRW(existing.total) + "\n새로: " + formatKRW(total))) return;
+    existing.total = total;
+  } else {
+    state.snapshots.push({ month: key, total });
+  }
+  state.snapshots.sort((a, b) => a.month.localeCompare(b.month));
+  saveState();
+  renderSnapshots();
+  renderChart();
+  toast(formatMonthKey(key) + " 저장 완료");
+}
+
+function deleteSnapshot(month) {
+  if (!confirm(formatMonthKey(month) + " 기록을 삭제할까요?")) return;
+  state.snapshots = state.snapshots.filter(s => s.month !== month);
+  saveState();
+  renderSnapshots();
+  renderChart();
+}
+
+function renderSnapshots() {
+  const container = document.getElementById("snapshot-list");
+  if (state.snapshots.length === 0) {
+    container.innerHTML = '<div class="empty" style="padding: 12px;">저장된 월별 기록이 없어요</div>';
+    return;
+  }
+  let html = "";
+  const sorted = [...state.snapshots].sort((a, b) => b.month.localeCompare(a.month));
+  for (const s of sorted) {
+    html += '<div class="snapshot-row">';
+    html += '<span class="snapshot-date">' + formatMonthKey(s.month) + '</span>';
+    html += '<span>';
+    html += '<strong>' + formatKRW(s.total) + '</strong> ';
+    html += '<button class="icon-btn delete" data-snap-del="' + s.month + '">삭제</button>';
+    html += '</span>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+  container.querySelectorAll("[data-snap-del]").forEach(btn => {
+    btn.addEventListener("click", () => deleteSnapshot(btn.getAttribute("data-snap-del")));
+  });
+}
+
+// ---------- Chart ----------
+function renderChart() {
+  const ctx = document.getElementById("chart");
+  const sorted = [...state.snapshots].sort((a, b) => a.month.localeCompare(b.month));
+  const labels = sorted.map(s => formatMonthKey(s.month));
+  const data = sorted.map(s => s.total);
+
+  if (chart) {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = data;
+    chart.update();
+    return;
+  }
+
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "총 자산",
+        data: data,
+        borderColor: "#ec4899",
+        backgroundColor: "rgba(236, 72, 153, 0.12)",
+        borderWidth: 3,
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: "#ec4899",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => formatKRW(ctx.parsed.y),
+          },
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: v => formatKRWShort(v),
+            font: { size: 11 },
+          },
+          grid: { color: "#f3f4f6" },
+        },
+        x: {
+          ticks: {
+            font: { size: 11 },
+            maxRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: 6,
+          },
+          grid: { display: false },
+        },
+      },
+    },
+  });
+}
+
+// ---------- Modals ----------
+function openEditModal(id) {
+  const a = state.assets.find(x => x.id === id);
+  if (!a) return;
+  editingId = id;
+  document.getElementById("edit-name").value = a.name;
+  document.getElementById("edit-type").value = a.type;
+  document.getElementById("edit-amount").value = a.amount.toLocaleString("ko-KR");
+  document.getElementById("edit-amount-hint").textContent = formatHint(a.amount);
+  document.getElementById("edit-modal").classList.add("open");
+}
+
+function closeEditModal() {
+  editingId = null;
+  document.getElementById("edit-modal").classList.remove("open");
+}
+
+function openGoalModal() {
+  const g = state.goal || {};
+  document.getElementById("goal-name-input").value = g.name || "";
+  document.getElementById("goal-amount-input").value = g.amount ? g.amount.toLocaleString("ko-KR") : "";
+  document.getElementById("goal-amount-hint").textContent = g.amount ? formatHint(g.amount) : "";
+  document.getElementById("goal-modal").classList.add("open");
+}
+
+function closeGoalModal() {
+  document.getElementById("goal-modal").classList.remove("open");
+}
+
+// ---------- Import / Export ----------
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const today = new Date().toISOString().slice(0, 10);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "우리집자산_" + today + ".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast("내보내기 완료");
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed || typeof parsed !== "object") throw new Error("형식 오류");
+      const newAssets = Array.isArray(parsed.assets) ? parsed.assets : [];
+      const newSnapshots = Array.isArray(parsed.snapshots) ? parsed.snapshots : [];
+      const newGoal = parsed.goal || null;
+
+      if (!confirm("기존 데이터를 덮어쓰고 파일의 데이터를 불러올까요?\n자산: " + newAssets.length + "개, 월별 기록: " + newSnapshots.length + "개")) return;
+
+      state.assets = newAssets;
+      state.snapshots = newSnapshots;
+      state.goal = newGoal;
+      saveState();
+      renderAll();
+      toast("불러오기 완료");
+    } catch (err) {
+      alert("파일을 읽을 수 없습니다: " + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ---------- Misc ----------
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("show"), 2000);
+}
+
+function renderAll() {
+  renderTotal();
+  renderGoal();
+  renderAssetList();
+  renderSnapshots();
+  renderChart();
+}
+
+// ---------- Event wiring ----------
+document.addEventListener("DOMContentLoaded", () => {
+  loadState();
+
+  attachAmountFormatting(
+    document.getElementById("amount-input"),
+    document.getElementById("amount-hint")
+  );
+  attachAmountFormatting(
+    document.getElementById("edit-amount"),
+    document.getElementById("edit-amount-hint")
+  );
+  attachAmountFormatting(
+    document.getElementById("goal-amount-input"),
+    document.getElementById("goal-amount-hint")
+  );
+
+  document.getElementById("add-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = document.getElementById("name-input").value.trim();
+    const type = document.getElementById("type-input").value;
+    const amount = parseAmount(document.getElementById("amount-input").value);
+    if (!name || !amount) {
+      toast("이름과 금액을 입력해주세요");
+      return;
+    }
+    addAsset(name, type, amount);
+    document.getElementById("add-form").reset();
+    document.getElementById("amount-hint").textContent = "";
+    toast("추가했어요");
+  });
+
+  document.getElementById("edit-form").addEventListener("submit", e => {
+    e.preventDefault();
+    if (!editingId) return;
+    const name = document.getElementById("edit-name").value.trim();
+    const type = document.getElementById("edit-type").value;
+    const amount = parseAmount(document.getElementById("edit-amount").value);
+    if (!name || !amount) {
+      toast("이름과 금액을 입력해주세요");
+      return;
+    }
+    updateAsset(editingId, name, type, amount);
+    closeEditModal();
+    toast("수정했어요");
+  });
+
+  document.getElementById("edit-cancel").addEventListener("click", closeEditModal);
+  document.getElementById("edit-modal").addEventListener("click", e => {
+    if (e.target.id === "edit-modal") closeEditModal();
+  });
+
+  document.getElementById("goal-btn").addEventListener("click", openGoalModal);
+  document.getElementById("goal-cancel").addEventListener("click", closeGoalModal);
+  document.getElementById("goal-modal").addEventListener("click", e => {
+    if (e.target.id === "goal-modal") closeGoalModal();
+  });
+
+  document.getElementById("goal-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = document.getElementById("goal-name-input").value.trim();
+    const amount = parseAmount(document.getElementById("goal-amount-input").value);
+    if (!amount) {
+      toast("목표 금액을 입력해주세요");
+      return;
+    }
+    state.goal = { name, amount };
+    saveState();
+    renderGoal();
+    closeGoalModal();
+    toast("목표를 저장했어요");
+  });
+
+  document.getElementById("goal-clear").addEventListener("click", () => {
+    if (!confirm("목표를 삭제할까요?")) return;
+    state.goal = null;
+    saveState();
+    renderGoal();
+    closeGoalModal();
+    toast("목표를 삭제했어요");
+  });
+
+  document.getElementById("snapshot-btn").addEventListener("click", saveSnapshot);
+
+  document.getElementById("export-btn").addEventListener("click", exportData);
+
+  document.getElementById("import-btn").addEventListener("click", () => {
+    document.getElementById("import-input").click();
+  });
+
+  document.getElementById("import-input").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (file) importData(file);
+    e.target.value = "";
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", () => {
+    if (!confirm("정말로 모든 데이터를 삭제할까요?\n이 작업은 되돌릴 수 없어요.")) return;
+    if (!confirm("한 번 더 확인할게요. 정말 모든 자산, 월별 기록, 목표를 모두 삭제하시겠어요?")) return;
+    state = { assets: [], snapshots: [], goal: null };
+    saveState();
+    renderAll();
+    toast("초기화 완료");
+  });
+
+  renderAll();
+});
+</script>
+</body>
+</html>
